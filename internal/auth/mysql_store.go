@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 type MySqlStore struct {
@@ -37,6 +38,26 @@ func (s *MySqlTxStore) Save(ctx context.Context, u User) error {
 	}
 
 	return nil
+}
+
+func (s *MySqlTxStore) FindByEmail(ctx context.Context, email string) (*User, error) {
+	query := `SELECT name, email, password FROM users WHERE email = ?`
+
+	user := &User{}
+
+	err := s.tx.QueryRowContext(ctx, query, email).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (s *MySqlTxStore) Commit() error {
