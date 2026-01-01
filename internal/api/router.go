@@ -20,11 +20,18 @@ func NewRouter(mux *http.ServeMux) *Router {
 	}
 }
 
+var initRouter *Router
+
 // ROUTES
 // --------------------------------------------------------------------------------------------------------
+func InitRoutes(mux *http.ServeMux) {
+	initRouter = NewRouter(mux).Group("/api/v1")
+	HealthRoutes(mux)
+}
+
 func HealthRoutes(mux *http.ServeMux) {
 	handler := NewHealthHandler()
-	router := NewRouter(mux).Group("/api/v1/health")
+	router := initRouter.Group("/health")
 
 	router.Get("/", handler.Health)
 }
@@ -33,7 +40,7 @@ func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
 	store := auth.NewMySqlStore(db)
 	service := auth.NewUserService(store)
 	handler := NewUserHandler(service)
-	router := NewRouter(mux).Group("/api/v1/auth")
+	router := initRouter.Group("/auth")
 
 	router.Post("/signup", handler.Signup)
 	router.Post("/login", handler.Login)

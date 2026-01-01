@@ -30,8 +30,7 @@ func main() {
 	}
 	defer db.Close()
 
-	api.HealthRoutes(mux)
-	api.AuthRoutes(mux, db)
+	api.InitRoutes(mux)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
