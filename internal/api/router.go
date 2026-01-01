@@ -23,6 +23,9 @@ func NewRouter(mux *http.ServeMux, handler Handler) *Router {
 }
 
 func (r *Router) Group(pattern string) *Router {
+	if pattern == "/" {
+		pattern = ""
+	}
 	return &Router{
 		group: r.group + pattern,
 		mux:   r.mux,
