@@ -20,6 +20,8 @@ func NewRouter(mux *http.ServeMux) *Router {
 	}
 }
 
+// ROUTES
+// --------------------------------------------------------------------------------------------------------
 func HealthRoutes(mux *http.ServeMux) {
 	handler := NewHealthHandler()
 	router := NewRouter(mux).Group("/api/v1/health")
@@ -37,6 +39,8 @@ func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
 	router.Post("/login", handler.Login)
 }
 
+// Used to group path patterns
+// --------------------------------------------------------------------------------------------------------
 func (r *Router) Group(pattern string) *Router {
 	if pattern == "/" {
 		pattern = ""
@@ -47,6 +51,7 @@ func (r *Router) Group(pattern string) *Router {
 	}
 }
 
+// Handles based on HTTP Method
 func (r *Router) Handle(pattern string, handler http.HandlerFunc, method string) {
 	if pattern == "/" {
 		pattern = ""
@@ -60,6 +65,8 @@ func (r *Router) Handle(pattern string, handler http.HandlerFunc, method string)
 	})
 }
 
+// HTTP METHODS
+// --------------------------------------------------------------------------------------------------------
 func (r *Router) Get(pattern string, handler http.HandlerFunc) {
 	r.Handle(pattern, handler, "GET")
 }
