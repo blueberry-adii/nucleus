@@ -23,6 +23,8 @@ func NewHealthHandler() *HealthHandler {
 }
 
 func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
+	_, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
 	NewAppResponse(w, http.StatusOK, "API Healthy and Working", nil)
 }
 
@@ -34,9 +36,14 @@ type UserHandler struct {
 }
 
 type UserRequestBody struct {
-	Email    string
-	Name     string
-	Password string
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+type LoginRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func NewUserHandler(service auth.UserServiceCreator) *UserHandler {
@@ -65,6 +72,25 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	NewAppResponse(w, 200, "Signed up user successfully", nil)
+}
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	var body LoginRequestBody
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		NewAppError(w, http.StatusBadRequest, "Invalid Request Body", []error{err})
+		return
+	}
+
+	res, err := h.service.AuthenticateUser(ctx, body.Email, body.Password)
+	if err != nil {
+		NewAppError(w, http.StatusUnauthorized, "Invalid Email or Password", err)
+		return
+	}
+
+	NewAppResponse(w, 200, "Logged In successfully", res)
 }
 
 // -------------------------------------------------------------------------------------
