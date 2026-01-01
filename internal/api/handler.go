@@ -71,7 +71,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	NewAppResponse(w, 200, "Signed up user successfully", nil)
+	NewAppResponse(w, http.StatusOK, "Signed up user successfully", nil)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,20 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    res.Token,
 	})
 
-	NewAppResponse(w, 200, "Logged In successfully", res)
+	NewAppResponse(w, http.StatusOK, "Logged In successfully", res)
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   -1,
+		Value:    "",
+	})
+
+	NewAppResponse(w, http.StatusOK, "User logged out successfully", nil)
 }
 
 // -------------------------------------------------------------------------------------

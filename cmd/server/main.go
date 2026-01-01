@@ -30,7 +30,7 @@ func main() {
 	}
 	defer db.Close()
 
-	api.InitRoutes(mux)
+	api.InitRoutes(mux, db)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

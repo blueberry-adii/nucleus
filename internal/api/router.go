@@ -24,9 +24,10 @@ var initRouter *Router
 
 // ROUTES
 // --------------------------------------------------------------------------------------------------------
-func InitRoutes(mux *http.ServeMux) {
+func InitRoutes(mux *http.ServeMux, db *sql.DB) {
 	initRouter = NewRouter(mux).Group("/api/v1")
 	HealthRoutes(mux)
+	AuthRoutes(mux, db)
 }
 
 func HealthRoutes(mux *http.ServeMux) {
@@ -44,6 +45,7 @@ func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
 
 	router.Post("/signup", handler.Signup)
 	router.Post("/login", handler.Login)
+	router.Post("/logout", handler.Logout)
 }
 
 // Used to group path patterns
