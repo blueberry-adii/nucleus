@@ -7,7 +7,7 @@ import (
 
 type UserServiceCreator interface {
 	CreateUser(ctx context.Context, email string, name string, password string) error
-	AuthenticateUser(ctx context.Context, email string, password string) (int, error)
+	AuthenticateUser(ctx context.Context, email string, password string) (*LoginResponse, error)
 }
 
 type UserService struct {
@@ -54,17 +54,17 @@ func (s *UserService) AuthenticateUser(ctx context.Context, email string, passwo
 	}
 
 	defer txStore.Rollback()
-	user, err := txStore.FindByEmail(email)
+	user, err := txStore.FindByEmail(ctx, email)
 	if err := txStore.Commit(); err != nil {
 		return nil, err
 	}
 
 	if err != nil {
-		return nil, errors.New("Invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	if !CheckPasswordHash(password, user.Password) {
-		return nil, errors.New("Invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	token, err := GenerateJWT(user.Id, user.Email)

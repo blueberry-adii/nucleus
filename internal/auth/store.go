@@ -8,6 +8,7 @@ type Store interface {
 
 type TxStore interface {
 	Save(ctx context.Context, user User) error
+	FindByEmail(ctx context.Context, email string) (*User, error)
 	Commit() error
 	Rollback() error
 }
