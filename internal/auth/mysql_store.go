@@ -41,12 +41,13 @@ func (s *MySqlTxStore) Save(ctx context.Context, u User) error {
 }
 
 func (s *MySqlTxStore) FindByEmail(ctx context.Context, email string) (*User, error) {
-	query := `SELECT name, email, password FROM users WHERE email = ?`
+	query := `SELECT id, name, email, password FROM users WHERE email = ?`
 
 	user := &User{}
 
 	err := s.tx.QueryRowContext(ctx, query, email).Scan(
 		&user.Id,
+		&user.Name,
 		&user.Email,
 		&user.Password,
 	)
