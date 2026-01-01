@@ -11,6 +11,7 @@ import (
 
 	"github.com/blueberry-adii/nucleus.git/internal/api"
 	"github.com/blueberry-adii/nucleus.git/internal/platform/database"
+	"github.com/blueberry-adii/nucleus.git/internal/platform/shutdown"
 )
 
 func main() {
@@ -52,4 +53,5 @@ func main() {
 	}()
 
 	<-ctx.Done()
+	shutdown.Run(srv)
 }
