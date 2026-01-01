@@ -2,21 +2,35 @@ package auth
 
 import (
 	"context"
-	"database/sql"
 )
 
-func CreateUser(db *sql.DB, u *User) error {
-	query := `INSERT INTO users (email, name, password) VALUES (?, ?, ?)`
-	result, err := db.ExecContext(context.Background(), query, u.Email, u.Name, u.Password)
+type UserServiceCreator interface {
+	CreateUser(ctx context.Context, email string, name string, password string) error
+}
+
+type UserService struct {
+	store Store
+}
+
+func NewOrderService(store Store) *UserService {
+	return &UserService{store}
+}
+
+func (s *UserService) CreateUser(ctx context.Context, email string, name string, password string) error {
+	txStore, err := s.store.BeginTx(ctx)
 	if err != nil {
 		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
+	defer txStore.Rollback()
+	user := User{Email: email, Name: name, Password: password}
+	if err := txStore.Save(ctx, user); err != nil {
 		return err
 	}
-	u.Id = int(id)
+
+	if err := txStore.Commit(); err != nil {
+		return err
+	}
 
 	return nil
 }
