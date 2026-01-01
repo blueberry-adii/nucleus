@@ -13,6 +13,7 @@ type AppError struct {
 }
 
 func NewAppError(w http.ResponseWriter, status int, message string, errors []error) {
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&AppError{
 		Status:  status,
 		Message: message,

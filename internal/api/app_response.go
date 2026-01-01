@@ -13,6 +13,7 @@ type AppResponse struct {
 }
 
 func NewAppResponse(w http.ResponseWriter, status int, message string, data any) {
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&AppResponse{
 		Status:  status,
 		Message: message,
