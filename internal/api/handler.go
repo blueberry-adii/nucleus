@@ -86,7 +86,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.service.AuthenticateUser(ctx, body.Email, body.Password)
 	if err != nil {
-		NewAppError(w, http.StatusUnauthorized, "Invalid Email or Password", err)
+		NewAppError(w, http.StatusUnauthorized, "Invalid Email or Password", []error{err})
 		return
 	}
 
