@@ -7,11 +7,13 @@ var Mux = http.NewServeMux()
 // Custom Router for grouping patterns
 type Router struct {
 	group string
+	mux   *http.ServeMux
 }
 
-func NewRouter() *Router {
+func NewRouter(mux *http.ServeMux) *Router {
 	return &Router{
 		group: "",
+		mux:   mux,
 	}
 }
 
@@ -21,12 +23,12 @@ func (r *Router) Group(pattern string) *Router {
 }
 
 func (r *Router) Handle(pattern string, handler http.HandlerFunc) {
-	Mux.Handle(r.group+pattern, Logging(handler))
+	r.mux.Handle(r.group+pattern, Logging(handler))
 }
 
-var router = NewRouter()
-
 func HealthRoutes() {
+	var router = NewRouter(Mux)
+
 	router.Group("/api/v1/health")
 
 	router.Handle("/", Health)
