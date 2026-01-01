@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+	"errors"
 )
 
 type UserServiceCreator interface {
 	CreateUser(ctx context.Context, email string, name string, password string) error
+	AuthenticateUser(ctx context.Context, email string, password string) (int, error)
 }
 
 type UserService struct {
@@ -38,4 +40,37 @@ func (s *UserService) CreateUser(ctx context.Context, email string, name string,
 	}
 
 	return nil
+}
+
+type LoginResponse struct {
+	User  User   `json:"user"`
+	Token string `json:"token"`
+}
+
+func (s *UserService) AuthenticateUser(ctx context.Context, email string, password string) (*LoginResponse, error) {
+	txStore, err := s.store.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer txStore.Rollback()
+	user, err := txStore.FindByEmail(email)
+	if err := txStore.Commit(); err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, errors.New("Invalid credentials")
+	}
+
+	if !CheckPasswordHash(password, user.Password) {
+		return nil, errors.New("Invalid credentials")
+	}
+
+	token, err := GenerateJWT(user.Id, user.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoginResponse{User: *user, Token: token}, nil
 }
