@@ -54,7 +54,13 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.service.CreateUser(ctx, body.Email, body.Name, body.Password); err != nil {
-		NewAppError(w, http.StatusInternalServerError, "Failed to signup user", []error{err})
+		var status int
+		if auth.HandleDBError(err).Number == 1062 {
+			status = http.StatusConflict
+		} else {
+			status = http.StatusInternalServerError
+		}
+		NewAppError(w, status, "Failed to signup user: "+err.Error(), []error{err})
 		return
 	}
 

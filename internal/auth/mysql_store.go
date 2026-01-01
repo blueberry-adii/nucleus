@@ -3,9 +3,6 @@ package auth
 import (
 	"context"
 	"database/sql"
-	"errors"
-
-	mysqlerr "github.com/go-sql-driver/mysql"
 )
 
 type MySqlStore struct {
@@ -39,10 +36,6 @@ func (s *MySqlTxStore) Save(ctx context.Context, u User) error {
 		return err
 	}
 
-	if isDuplicateKeyError(err) {
-		return errors.New("user already exists")
-	}
-
 	return nil
 }
 
@@ -52,12 +45,4 @@ func (s *MySqlTxStore) Commit() error {
 
 func (s *MySqlTxStore) Rollback() error {
 	return s.tx.Rollback()
-}
-
-func isDuplicateKeyError(err error) bool {
-	var mysqlErr *mysqlerr.MySQLError
-	if errors.As(err, &mysqlErr) {
-		return mysqlErr.Number == 1062
-	}
-	return false
 }
