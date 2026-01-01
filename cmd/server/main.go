@@ -8,8 +8,13 @@ import (
 )
 
 func main() {
-	api.HealthRoutes()
+
+	mux := http.NewServeMux()
+
+	api.HealthRoutes(mux)
 
 	log.Printf("Server running on port :8080")
-	http.ListenAndServe(":8080", api.Mux)
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatalf("server failed to start: %v", err)
+	}
 }
