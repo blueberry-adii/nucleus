@@ -47,8 +47,8 @@ func main() {
 
 	go func() {
 		log.Printf("Server running on port :8080")
-		if err := srv.ListenAndServe(); err != nil {
-			log.Fatalf("server failed to start: %v", err)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server error: %v", err)
 		}
 	}()
 
