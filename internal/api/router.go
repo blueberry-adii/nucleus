@@ -47,4 +47,5 @@ func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
 	router := NewRouter(mux, handler).Group("/api/v1/auth")
 
 	router.Handle("/signup", handler.Signup)
+	router.Handle("/login", handler.Login)
 }
