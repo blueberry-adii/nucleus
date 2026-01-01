@@ -1,17 +1,24 @@
 package api
 
-import "net/http"
+import (
+	"database/sql"
+	"net/http"
+
+	"github.com/blueberry-adii/nucleus.git/internal/auth"
+)
 
 // Custom Router for grouping patterns
 type Router struct {
-	group string
-	mux   *http.ServeMux
+	handler Handler
+	group   string
+	mux     *http.ServeMux
 }
 
-func NewRouter(mux *http.ServeMux) *Router {
+func NewRouter(mux *http.ServeMux, handler Handler) *Router {
 	return &Router{
-		group: "",
-		mux:   mux,
+		group:   "",
+		mux:     mux,
+		handler: handler,
 	}
 }
 
@@ -27,7 +34,16 @@ func (r *Router) Handle(pattern string, handler http.HandlerFunc) {
 }
 
 func HealthRoutes(mux *http.ServeMux) {
-	router := NewRouter(mux).Group("/api/v1/health")
+	handler := NewHealthHandler()
+	router := NewRouter(mux, handler).Group("/api/v1/health")
 
 	router.Handle("/", Health)
+}
+
+func AuthRoutes(mux *http.ServeMux) {
+	db := // database
+	store := auth.MySqlStore(db)
+	service := auth.NewUserService(store)
+	handler := NewUserHandler(service)
+	router := NewRouter(mux, handler).Group("/api/v1/auth")
 }

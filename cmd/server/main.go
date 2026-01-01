@@ -17,6 +17,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	api.HealthRoutes(mux)
+	api.AuthRoutes(mux)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

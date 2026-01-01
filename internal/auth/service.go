@@ -12,7 +12,7 @@ type UserService struct {
 	store Store
 }
 
-func NewOrderService(store Store) *UserService {
+func NewUserService(store Store) *UserService {
 	return &UserService{store}
 }
 
