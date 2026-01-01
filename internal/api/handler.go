@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/blueberry-adii/nucleus.git/internal/auth"
@@ -17,7 +18,9 @@ func NewHealthHandler() *HealthHandler {
 }
 
 func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("API Healthy and Working"))
+	res := NewAppResponse(http.StatusOK, "API Healthy and Working", nil)
+
+	json.NewEncoder(w).Encode(res)
 }
 
 type UserHandler struct {
