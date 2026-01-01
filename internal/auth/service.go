@@ -22,8 +22,13 @@ func (s *UserService) CreateUser(ctx context.Context, email string, name string,
 		return err
 	}
 
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		return err
+	}
+
 	defer txStore.Rollback()
-	user := User{Email: email, Name: name, Password: password}
+	user := User{Email: email, Name: name, Password: hashedPassword}
 	if err := txStore.Save(ctx, user); err != nil {
 		return err
 	}
