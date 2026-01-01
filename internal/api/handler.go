@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/blueberry-adii/nucleus.git/internal/auth"
 )
@@ -21,9 +23,7 @@ func NewHealthHandler() *HealthHandler {
 }
 
 func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
-	res := NewAppResponse(http.StatusOK, "API Healthy and Working", nil)
-
-	json.NewEncoder(w).Encode(res)
+	NewAppResponse(w, http.StatusOK, "API Healthy and Working", nil)
 }
 
 // Auth Endpoint
@@ -33,6 +33,12 @@ type UserHandler struct {
 	service auth.UserServiceCreator
 }
 
+type UserRequestBody struct {
+	Email    string
+	Name     string
+	Password string
+}
+
 func NewUserHandler(service auth.UserServiceCreator) *UserHandler {
 	return &UserHandler{
 		service,
@@ -40,7 +46,19 @@ func NewUserHandler(service auth.UserServiceCreator) *UserHandler {
 }
 
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	var body UserRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		NewAppError(w, http.StatusBadRequest, "Invalid Request Body", []error{err})
+		return
+	}
+	if err := h.service.CreateUser(ctx, body.Email, body.Name, body.Password); err != nil {
+		NewAppError(w, http.StatusInternalServerError, "Failed to signup user", []error{err})
+		return
+	}
 
+	NewAppResponse(w, 200, "Signed up user successfully", nil)
 }
 
 // -------------------------------------------------------------------------------------

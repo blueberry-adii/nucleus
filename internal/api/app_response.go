@@ -1,5 +1,10 @@
 package api
 
+import (
+	"encoding/json"
+	"net/http"
+)
+
 type AppResponse struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
@@ -7,11 +12,11 @@ type AppResponse struct {
 	Success bool   `json:"success"`
 }
 
-func NewAppResponse(status int, message string, data any) *AppResponse {
-	return &AppResponse{
+func NewAppResponse(w http.ResponseWriter, status int, message string, data any) {
+	json.NewEncoder(w).Encode(&AppResponse{
 		Status:  status,
 		Message: message,
 		Data:    data,
 		Success: true,
-	}
+	})
 }
