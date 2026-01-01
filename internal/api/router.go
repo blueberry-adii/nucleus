@@ -9,17 +9,32 @@ import (
 
 // Custom Router for grouping patterns
 type Router struct {
-	handler Handler
-	group   string
-	mux     *http.ServeMux
+	group string
+	mux   *http.ServeMux
 }
 
-func NewRouter(mux *http.ServeMux, handler Handler) *Router {
+func NewRouter(mux *http.ServeMux) *Router {
 	return &Router{
-		group:   "",
-		mux:     mux,
-		handler: handler,
+		group: "",
+		mux:   mux,
 	}
+}
+
+func HealthRoutes(mux *http.ServeMux) {
+	handler := NewHealthHandler()
+	router := NewRouter(mux).Group("/api/v1/health")
+
+	router.Get("/", handler.Health)
+}
+
+func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
+	store := auth.NewMySqlStore(db)
+	service := auth.NewUserService(store)
+	handler := NewUserHandler(service)
+	router := NewRouter(mux).Group("/api/v1/auth")
+
+	router.Post("/signup", handler.Signup)
+	router.Post("/login", handler.Login)
 }
 
 func (r *Router) Group(pattern string) *Router {
@@ -32,23 +47,35 @@ func (r *Router) Group(pattern string) *Router {
 	}
 }
 
-func (r *Router) Handle(pattern string, handler http.HandlerFunc) {
-	r.mux.Handle(r.group+pattern, handler)
+func (r *Router) Handle(pattern string, handler http.HandlerFunc, method string) {
+	if pattern == "/" {
+		pattern = ""
+	}
+	r.mux.HandleFunc(r.group+pattern, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != method {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
 }
 
-func HealthRoutes(mux *http.ServeMux) {
-	handler := NewHealthHandler()
-	router := NewRouter(mux, handler).Group("/api/v1/health")
-
-	router.Handle("/", handler.Health)
+func (r *Router) Get(pattern string, handler http.HandlerFunc) {
+	r.Handle(pattern, handler, "GET")
 }
 
-func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
-	store := auth.NewMySqlStore(db)
-	service := auth.NewUserService(store)
-	handler := NewUserHandler(service)
-	router := NewRouter(mux, handler).Group("/api/v1/auth")
+func (r *Router) Post(pattern string, handler http.HandlerFunc) {
+	r.Handle(pattern, handler, "POST")
+}
 
-	router.Handle("/signup", handler.Signup)
-	router.Handle("/login", handler.Login)
+func (r *Router) Put(pattern string, handler http.HandlerFunc) {
+	r.Handle(pattern, handler, "PUT")
+}
+
+func (r *Router) Patch(pattern string, handler http.HandlerFunc) {
+	r.Handle(pattern, handler, "PATCH")
+}
+
+func (r *Router) Delete(pattern string, handler http.HandlerFunc) {
+	r.Handle(pattern, handler, "DELETE")
 }
