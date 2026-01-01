@@ -23,7 +23,7 @@ func (r *Router) Group(pattern string) *Router {
 }
 
 func (r *Router) Handle(pattern string, handler http.HandlerFunc) {
-	r.mux.Handle(r.group+pattern, Logging(handler))
+	r.mux.Handle(r.group+pattern, handler)
 }
 
 func HealthRoutes(mux *http.ServeMux) {
