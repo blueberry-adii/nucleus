@@ -37,13 +37,14 @@ func HealthRoutes(mux *http.ServeMux) {
 	handler := NewHealthHandler()
 	router := NewRouter(mux, handler).Group("/api/v1/health")
 
-	router.Handle("/", Health)
+	router.Handle("/", handler.Health)
 }
 
-func AuthRoutes(mux *http.ServeMux) {
-	db := // database
-	store := auth.MySqlStore(db)
+func AuthRoutes(mux *http.ServeMux, db *sql.DB) {
+	store := auth.NewMySqlStore(db)
 	service := auth.NewUserService(store)
 	handler := NewUserHandler(service)
 	router := NewRouter(mux, handler).Group("/api/v1/auth")
+
+	router.Handle("/signup", handler.Signup)
 }

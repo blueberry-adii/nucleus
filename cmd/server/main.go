@@ -10,14 +10,27 @@ import (
 	"time"
 
 	"github.com/blueberry-adii/nucleus.git/internal/api"
+	"github.com/blueberry-adii/nucleus.git/internal/platform/database"
 )
 
 func main() {
-
 	mux := http.NewServeMux()
 
+	config := database.Config{
+		User:     "root",
+		Password: "pass",
+		Host:     "localhost",
+		Port:     3306,
+		Database: "nucleus",
+	}
+	db, err := database.NewMySQL(config)
+	if err != nil {
+		log.Fatalf("Database connection failed: %v", err)
+	}
+	defer db.Close()
+
 	api.HealthRoutes(mux)
-	api.AuthRoutes(mux)
+	api.AuthRoutes(mux, db)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
