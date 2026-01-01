@@ -90,6 +90,15 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   3600 * 24,
+		Value:    res.Token,
+	})
+
 	NewAppResponse(w, 200, "Logged In successfully", res)
 }
 
